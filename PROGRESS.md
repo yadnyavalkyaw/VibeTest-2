@@ -4,7 +4,7 @@
 written so it can be read directly to a project guide / professor. It is **updated after
 every coding session** (standing rule in `AGENTS.md`).
 
-*Last updated: 2026-09-24 — session 18 (PDF report download).*
+*Last updated: 2026-09-24 — session 19 (project README).*
 
 ---
 
@@ -155,6 +155,14 @@ Deliberately vulnerable **fake** fixtures owned by the team (legal, safe, reprod
 ## 6. Not implemented yet (planned next)
 
 - Firestore rule checks (Realtime Database rules are done; Firestore needs collection-name discovery) and client-side-only authorization hints
+- Cookie-flag checks (`Secure` / `HttpOnly` / `SameSite`): the `Artifact` carries the
+  fields but nothing populates or checks them yet
+- CORS-misconfiguration and TLS/certificate-configuration checks: both categories exist
+  in the severity map, but no detector emits them
+- Finding `confidence` is stored in the schema but not yet displayed in the report or
+  dashboard (documented in the README's limitations)
+- Out of scope by design, not planned: port/infrastructure scanning, exploitation,
+  authenticated crawling, auto-fix
 
 ## 7. Session log
 
@@ -178,3 +186,4 @@ Deliberately vulnerable **fake** fixtures owned by the team (legal, safe, reprod
 | 16 | 2026-09-21 | Eval harness extended to all 5 fixtures: repo-mode dispatch, render-dependent skip, flexible fixture readiness URL; `demo_spa` + `demo_repo` ground-truth labels; results regenerated (20 categories, P=R=F1=1.00, 0 violations); 2 new tests |
 | 17 | 2026-09-21 | Dashboard accepts website URLs **or public GitHub repo refs** (auto-detect), explicit authorization checkbox with run-scoped allowlisting, mode-aware progress text, Website/GitHub-repository badge; `parse_repo_ref` hardened against foreign hosts; 6 new tests |
 | 18 | 2026-09-24 | PDF report download: `reporting/pdf.py` (Playwright `page.pdf()`, A4, page-break-safe) + dashboard button with browser-print fallback; WeasyPrint extra dropped; 6 new tests |
+| 19 | 2026-09-24 | Project `README.md`: what the tool is, the 10 detectors, an explicit "what it does not do" scope table (no port scanning / no exploitation, with the reasoning), full clone-and-run instructions for a fresh machine, optional-component tiers (Playwright / Katana / Ollama), the five owned demo targets, CLI + config reference, evaluation results, troubleshooting table, documentation map; no code changes, test count unchanged at 124 |
