@@ -12,6 +12,7 @@ import logging
 import httpx
 
 from ..core.context import ScanContext
+from ..core.http_util import gated_get
 from ..schemas.artifacts import Artifact, Endpoint, PageSnapshot
 from . import fingerprint, katana, render
 from .js_bundle import extract_bundles
@@ -64,7 +65,7 @@ def fetch(url: str, ctx: ScanContext) -> Artifact:
 
     max_pages = max(1, ctx.settings.max_pages)
     with httpx.Client(
-        follow_redirects=True,
+        follow_redirects=False,
         timeout=ctx.settings.request_timeout,
         headers={"User-Agent": ctx.settings.user_agent},
     ) as client:
@@ -72,7 +73,7 @@ def fetch(url: str, ctx: ScanContext) -> Artifact:
             if not ctx.gate.is_allowed(page_url):  # belt-and-suspenders re-check
                 continue
             try:
-                resp = client.get(page_url)
+                resp = gated_get(client, page_url, ctx.gate)
             except httpx.HTTPError as exc:
                 errors.append(f"fetch failed for {page_url}: {exc}")
                 continue

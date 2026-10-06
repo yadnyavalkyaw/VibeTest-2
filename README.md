@@ -2,6 +2,11 @@
 
 **An authorization-gated, read-only security scanner for "vibe-coded" web applications.**
 
+> **Research direction update (2026-10):** the project is evolving toward detecting
+> security-behavior drift across application versions. The first research workflow is
+> offline/import-only: it compares supplied behavior observations and never logs into
+> or sends requests to an application. See [docs/RESEARCH_DIRECTION.md](docs/RESEARCH_DIRECTION.md).
+
 VibeTest crawls a website you own (or a public GitHub repository), checks it for the
 security mistakes AI-assisted apps actually make, and reports each one in plain English
 with **evidence** and a **fix suggestion** — aimed at a non-expert owner, not a
@@ -280,7 +285,18 @@ vibetest scan <url>        Scan a live website (must be allowlisted/authorized)
 vibetest scan-repo <repo>  Statically analyse a PUBLIC GitHub repository
 vibetest targets           Show the allowlist
 vibetest serve             Start the local dashboard
+vibetest behavior-baseline  Build a version profile from imported observation JSON
+vibetest behavior-compare  Compare two saved behavior profiles
+vibetest behavior-verify   Match candidates against separately imported observations
+vibetest graph-build       Build a JSON behavior graph from a saved profile
+vibetest experiment-run    Run a local imported-observation experiment
 ```
+
+The `behavior-*`, `graph-build`, and `experiment-run` commands are a separate
+research foundation. They accept local JSON files only, make zero target requests,
+and do not handle credentials. The included MiniShop records are synthetic fixtures,
+not observations from a running application and not research results. Automated
+authenticated runtime testing remains blocked by project scope policy.
 
 **`scan` options**
 

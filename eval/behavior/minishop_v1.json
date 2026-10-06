@@ -1,0 +1,16 @@
+{
+  "application_id": "minishop-demo",
+  "version_id": "v1",
+  "source_version": "fixture-commit-v1",
+  "source_ref": "fixtures/minishop/v1",
+  "observations": [
+    {"case_id":"read-own-order","principal_id":"user-a","role":"user","action":"read","resource":"order-a","resource_owner_id":"user-a","endpoint":"/orders/order-a","method":"GET","application_state":"authenticated","expected":"allowed","observed":"allowed","response":{"status_code":200,"indicators":["order-visible"],"evidence_ref":"fixture:v1:own"}},
+    {"case_id":"read-other-order","principal_id":"user-a","role":"user","action":"read","resource":"order-b","resource_owner_id":"user-b","endpoint":"/orders/order-b","method":"GET","application_state":"authenticated","expected":"denied","observed":"allowed","response":{"status_code":200,"indicators":["order-visible"],"evidence_ref":"fixture:v1:bola"}},
+    {"case_id":"delete-as-user","principal_id":"user-a","role":"user","action":"delete","resource":"user-b","endpoint":"/admin/users/user-b","method":"DELETE","application_state":"authenticated","expected":"denied","observed":"allowed","response":{"status_code":204,"indicators":["deleted"],"evidence_ref":"fixture:v1:bfla-user"}},
+    {"case_id":"delete-as-admin","principal_id":"admin","role":"admin","action":"delete","resource":"user-b","endpoint":"/admin/users/user-b","method":"DELETE","application_state":"authenticated","expected":"allowed","observed":"allowed","response":{"status_code":204,"indicators":["deleted"],"evidence_ref":"fixture:v1:bfla-admin"}},
+    {"case_id":"removed-owner-check","principal_id":"user-a","role":"user","action":"read","resource":"invoice-b","resource_owner_id":"user-b","endpoint":"/invoices/invoice-b","method":"GET","application_state":"authenticated","expected":"denied","observed":"allowed","authorization_condition":"invoice.owner_id == principal.id","policy_source":"fixture-label","response":{"status_code":200,"indicators":["invoice-visible"],"evidence_ref":"fixture:v1:removed-check"}},
+    {"case_id":"weakened-role-check","principal_id":"user-a","role":"user","action":"export","resource":"customer-data","endpoint":"/admin/export","method":"POST","application_state":"authenticated","expected":"denied","observed":"allowed","authorization_condition":"principal.role == admin","policy_source":"fixture-label","response":{"status_code":200,"indicators":["export-ready"],"evidence_ref":"fixture:v1:weakened-check"}},
+    {"case_id":"unchanged-denial","principal_id":"user-a","role":"user","action":"delete","resource":"order-b","resource_owner_id":"user-b","endpoint":"/orders/order-b","method":"DELETE","application_state":"authenticated","expected":"denied","observed":"denied","response":{"status_code":403,"indicators":["forbidden"],"evidence_ref":"fixture:v1:unchanged"}},
+    {"case_id":"functional-only-change","principal_id":"user-a","role":"user","action":"read","resource":"invoice-a","resource_owner_id":"user-a","endpoint":"/invoices/invoice-a","method":"GET","application_state":"authenticated","expected":"allowed","observed":"allowed","response":{"status_code":202,"indicators":["invoice-queued"],"evidence_ref":"fixture:v1:functional"}}
+  ]
+}

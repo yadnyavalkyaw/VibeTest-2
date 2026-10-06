@@ -22,7 +22,7 @@ from urllib.parse import urljoin, urlsplit
 import httpx
 
 from ..core.context import ScanContext
-from ..core.http_util import read_bounded
+from ..core.http_util import gated_stream, read_bounded
 from ..schemas.artifacts import JSBundle, PageSnapshot
 
 logger = logging.getLogger(__name__)
@@ -98,14 +98,14 @@ def extract_bundles(
     owns_client = client is None
     if client is None:
         client = httpx.Client(
-            follow_redirects=True,
+            follow_redirects=False,
             timeout=ctx.settings.request_timeout,
             headers={"User-Agent": ctx.settings.user_agent},
         )
     try:
         for url in candidates:
             try:
-                with client.stream("GET", url) as resp:
+                with gated_stream(client, "GET", url, ctx.gate) as resp:
                     if resp.status_code != 200:
                         continue
                     if "text/html" in resp.headers.get("content-type", "").lower():

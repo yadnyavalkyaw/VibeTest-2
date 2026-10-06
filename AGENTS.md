@@ -14,6 +14,12 @@ in plain English to non-expert users, assisted by a **local** LLM.
 
 Phase 1 scope: scan/crawl → detect → report. **Auto-fix is explicitly out of scope** (future work).
 
+Research direction (2026-10): evolve toward detecting security-behavior drift between
+versions of AI-assisted web applications. The initial `vibetest/research/` workflow is
+offline/import-only: no automated login, credential use, privilege switching, target
+requests, or active verification. These actions are blocked by scope policy unless the
+team formally revises it. The original VibeTest scanner remains available.
+
 ## Hard constraints (never violate)
 
 1. **Zero budget.** No paid APIs, no paid subscriptions, no paid hosting. Only
@@ -27,6 +33,8 @@ Phase 1 scope: scan/crawl → detect → report. **Auto-fix is explicitly out of
    The LLM may ONLY touch the explanation/report layer, never detection logic.
 4. **Student-demo scope.** Do not over-engineer for production scale (no Kubernetes,
    no microservices, no multi-tenancy, no user accounts).
+5. **Research runtime boundary.** Behavior profiles are built from imported observations
+   only. Automated authenticated analysis and active verification are not implemented.
 
 ## Team & workflow
 
@@ -74,7 +82,9 @@ runs the same detectors statically — no live requests to the deployed site.
 
 ## Coding conventions
 
-- All data crossing module boundaries MUST be a Pydantic model from `vibetest/schemas/`.
+- All data crossing module boundaries MUST be a Pydantic model. Shared scanner contracts
+  live in `vibetest/schemas/`; research-domain models may live beside their research
+  component under `vibetest/research/` and must remain Pydantic models.
 - Every detector implements the `Detector` protocol in `vibetest/detectors/base.py`
   and is registered in `vibetest/detectors/registry.py`. One vulnerability class = one file.
 - Detectors receive an `Artifact` and return `list[Finding]`; they never do their own
@@ -95,6 +105,7 @@ runs the same detectors statically — no live requests to the deployed site.
   (agent reports issues at session end; the team updates the file)
 - `PENDING.md` — deferred tasks (testing-target acquisition lives there until Week 10)
 - `AGENTS.md` — this file; keep it current
+- `docs/RESEARCH_DIRECTION.md` — current research status, offline workflow, and roadmap
 
 ## Non-goals (Phase 1)
 

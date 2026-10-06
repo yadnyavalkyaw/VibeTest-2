@@ -4,7 +4,7 @@
 written so it can be read directly to a project guide / professor. It is **updated after
 every coding session** (standing rule in `AGENTS.md`).
 
-*Last updated: 2026-09-24 — session 19 (project README).*
+*Last updated: 2026-10-04 — session 20 (offline behavior-drift foundation).*
 
 ---
 
@@ -187,3 +187,23 @@ Deliberately vulnerable **fake** fixtures owned by the team (legal, safe, reprod
 | 17 | 2026-09-21 | Dashboard accepts website URLs **or public GitHub repo refs** (auto-detect), explicit authorization checkbox with run-scoped allowlisting, mode-aware progress text, Website/GitHub-repository badge; `parse_repo_ref` hardened against foreign hosts; 6 new tests |
 | 18 | 2026-09-24 | PDF report download: `reporting/pdf.py` (Playwright `page.pdf()`, A4, page-break-safe) + dashboard button with browser-print fallback; WeasyPrint extra dropped; 6 new tests |
 | 19 | 2026-09-24 | Project `README.md`: what the tool is, the 10 detectors, an explicit "what it does not do" scope table (no port scanning / no exploitation, with the reasoning), full clone-and-run instructions for a fresh machine, optional-component tiers (Playwright / Katana / Ollama), the five owned demo targets, CLI + config reference, evaluation results, troubleshooting table, documentation map; no code changes, test count unchanged at 124 |
+| 20 | 2026-10-04 | Added offline/import-only versioned behavior profiles, deterministic outcome classification and comparison, JSON graph/diff, imported-observation verification, experiment summary, CLI commands, synthetic MiniShop V0/V1 fixtures, tests, and research documentation. Fixed HTTPX redirect handling to gate every redirect destination. Python/JSON syntax checks passed; pytest could not run because the project virtualenv points to an inaccessible Windows Store Python and the available bundled Python lacks compatible project dependencies. |
+
+## 8. Security-behavior drift research foundation (session 20)
+
+The repository now has an initial **offline-only** foundation under `vibetest/research/`.
+It imports JSON observations, creates versioned Pydantic profiles, classifies supplied
+response indicators with explicit deterministic rules, compares version profiles,
+builds and diffs a JSON graph, and can match candidates against a separately imported
+verification profile. The experiment runner records `request_count: 0`.
+
+The included MiniShop V0/V1/verification records are synthetic fixtures demonstrating
+owner/role changes, unchanged behavior, and a functional-only status change. They are
+not collected from a running application and must not be cited as measured findings.
+Automated login, credentials, privilege switching, authenticated crawling, target
+requests, static source authorization analysis, and active verification remain
+unimplemented; runtime collection is blocked by project scope policy.
+
+The existing `Artifact` and `Finding` contracts and legacy scanner remain intact. New
+research commands are `behavior-baseline`, `behavior-compare`, `behavior-verify`,
+`graph-build`, and `experiment-run`.

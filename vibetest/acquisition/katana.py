@@ -93,6 +93,7 @@ def _build_command(binary: str, url: str, ctx: ScanContext) -> list[str]:
         "-d", str(s.katana_depth),
         "-rl", str(s.katana_rate_limit),   # requests/second — keep gentle
         "-timeout", str(int(s.request_timeout)),
+        "-dr",                            # redirects can escape the host consent boundary
         "-duc",                            # skip update check (offline-friendly)
     ]
 

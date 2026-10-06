@@ -4,6 +4,29 @@ Status: **frozen for Phase 1** (Week 3 checkpoint artifact for the paper-writer)
 Changes require agreement of all three team members. See `PROJECTS.md` for the
 decision rationale and `AGENTS.md` for coding conventions.
 
+## Research direction extension (2026-10)
+
+The original website-scan pipeline below remains available and keeps its `Artifact`
+and `Finding` contracts. The research foundation is a separate offline workflow under
+`vibetest/research/`: imported observations → versioned behavior profile → deterministic
+profile comparison → JSON behavior graph and graph diff → optional matching against a
+separately imported verification profile. The research workflow makes zero target
+requests and handles no credentials. Automated authenticated runtime collection is
+blocked by the repository scope policy; see `docs/RESEARCH_DIRECTION.md`.
+
+```text
+Imported observation JSON (V0) → BehaviorProfile baseline ─┐
+                                                           ├→ comparison + graph diff
+Imported observation JSON (V1) → BehaviorProfile ─────────┘          │
+Separate imported verification observations ─────────────────────────┤
+                                                                     ▼
+                                        regression candidates + supplied-data status
+```
+
+This is an initial deterministic data-processing foundation, not a complete static,
+dynamic, or authorization-intent analysis system. The MiniShop files are synthetic
+fixtures, not a running application or measured research result.
+
 ## 1. Design summary
 
 Plugin-based **deterministic pipeline** + **local-LLM explanation layer** (hybrid).

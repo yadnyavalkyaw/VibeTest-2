@@ -14,6 +14,13 @@ from .core.repo_scan import run_repo_scan
 from .core.store import Store
 from .reporting.html_report import render_report
 from .schemas.scan import ScanResult
+from .research.behavior.baseline import load_observations, load_profile, save_profile
+from .research.behavior.comparator import compare_profiles, verify_candidates
+from .research.behavior.models import OutcomeClassifier
+from .research.experiment import run_imported_experiment
+from .research.graph.builder import build_graph
+from .research.graph.diff import diff_profiles
+from .research.graph.serializer import save_graph
 
 app = typer.Typer(
     help="VibeTest — authorization-gated security scanner for vibe-coded web apps.",
@@ -134,6 +141,112 @@ def targets() -> None:
     console.print("Allowlisted targets (owned/authorized only):")
     for t in settings.allowed_targets:
         console.print(f"  • {t}")
+
+
+@app.command("behavior-baseline")
+def behavior_baseline(
+    input_file: Path = typer.Argument(..., exists=True, readable=True, help="Imported observation JSON; no target requests are made."),
+    out: Path = typer.Option(..., "--out", help="Write the versioned behavior profile JSON."),
+    classifier: Path | None = typer.Option(None, "--classifier", help="Optional deterministic outcome-rule JSON."),
+) -> None:
+    """Build a behavior profile from supplied/imported observations only."""
+    try:
+        rules = OutcomeClassifier.model_validate_json(classifier.read_text(encoding="utf-8")) if classifier else None
+        profile = load_observations(input_file, classifier=rules)
+        save_profile(profile, out)
+    except (ValueError, OSError) as exc:
+        console.print(f"[bold red]IMPORT FAILED:[/] {exc}")
+        raise typer.Exit(code=2) from exc
+    console.print(f"Imported {len(profile.observations)} observations for {profile.application_id}@{profile.version_id}.")
+    console.print(f"Profile: {profile.profile_id} → {out}")
+
+
+@app.command("behavior-compare")
+def behavior_compare(
+    baseline_file: Path = typer.Argument(..., exists=True, readable=True),
+    current_file: Path = typer.Argument(..., exists=True, readable=True),
+    out: Path = typer.Option(..., "--out", help="Write comparison JSON."),
+    graph_out: Path | None = typer.Option(None, "--graph-out", help="Optionally write graph-diff JSON."),
+) -> None:
+    """Compare two saved offline behavior profiles."""
+    try:
+        baseline, current = load_profile(baseline_file), load_profile(current_file)
+        result = compare_profiles(baseline, current)
+        delta = diff_profiles(baseline, current)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(result.model_dump_json(indent=2) + "\n", encoding="utf-8")
+        if graph_out:
+            graph_out.parent.mkdir(parents=True, exist_ok=True)
+            graph_out.write_text(delta.model_dump_json(indent=2) + "\n", encoding="utf-8")
+    except (ValueError, OSError) as exc:
+        console.print(f"[bold red]COMPARISON FAILED:[/] {exc}")
+        raise typer.Exit(code=2) from exc
+    console.print(f"{len(result.regression_candidates)} security drift candidate(s) in {baseline.version_id} → {current.version_id}.")
+    console.print(f"Comparison: {out}")
+
+
+@app.command("behavior-verify")
+def behavior_verify(
+    baseline_file: Path = typer.Argument(..., exists=True, readable=True),
+    current_file: Path = typer.Argument(..., exists=True, readable=True),
+    verification_file: Path = typer.Argument(..., exists=True, readable=True, help="Separately imported observations; no verification requests are made."),
+    out: Path = typer.Option(..., "--out", help="Write the comparison with supplied-observation verification statuses."),
+) -> None:
+    """Verify candidates against a separately supplied observation profile."""
+    try:
+        baseline, current = load_profile(baseline_file), load_profile(current_file)
+        verification = load_profile(verification_file)
+        result = verify_candidates(compare_profiles(baseline, current), verification)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(result.model_dump_json(indent=2) + "\n", encoding="utf-8")
+    except (ValueError, OSError) as exc:
+        console.print(f"[bold red]VERIFICATION FAILED:[/] {exc}")
+        raise typer.Exit(code=2) from exc
+    verified = sum(1 for item in result.regression_candidates if item.verification and item.verification.status.value == "verified")
+    console.print(f"{verified} candidate(s) reproduced in separately supplied observations; collection is not attested.")
+    console.print(f"Result: {out}")
+
+
+@app.command("graph-build")
+def graph_build(
+    profile_file: Path = typer.Argument(..., exists=True, readable=True),
+    out: Path = typer.Option(..., "--out", help="Write JSON graph."),
+) -> None:
+    """Build a JSON behavior graph from a saved profile."""
+    try:
+        graph = build_graph(load_profile(profile_file))
+        save_graph(graph, out)
+    except (ValueError, OSError) as exc:
+        console.print(f"[bold red]GRAPH BUILD FAILED:[/] {exc}")
+        raise typer.Exit(code=2) from exc
+    console.print(f"Wrote {len(graph.nodes)} node(s) and {len(graph.edges)} edge(s) to {out}.")
+
+
+@app.command("experiment-run")
+def experiment_run(
+    baseline_file: Path = typer.Argument(..., exists=True, readable=True),
+    current_file: Path = typer.Argument(..., exists=True, readable=True),
+    out: Path = typer.Option(..., "--out", help="Write structured experiment result JSON."),
+    verification_file: Path | None = typer.Option(None, "--verification", help="Optional separately supplied verification observation JSON."),
+    ground_truth_file: Path | None = typer.Option(None, "--ground-truth", help="Optional JSON object mapping case_id to true/false regression labels."),
+) -> None:
+    """Run a local experiment over imported observation files (request_count=0)."""
+    import json
+
+    try:
+        baseline, current = load_profile(baseline_file), load_profile(current_file)
+        verification = load_profile(verification_file) if verification_file else None
+        ground_truth = json.loads(ground_truth_file.read_text(encoding="utf-8")) if ground_truth_file else None
+        if ground_truth is not None and not isinstance(ground_truth, dict):
+            raise ValueError("ground truth must be a JSON object mapping case ids to booleans")
+        result = run_imported_experiment(baseline, current, verification, ground_truth=ground_truth)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(result.model_dump_json(indent=2) + "\n", encoding="utf-8")
+    except (ValueError, OSError) as exc:
+        console.print(f"[bold red]EXPERIMENT FAILED:[/] {exc}")
+        raise typer.Exit(code=2) from exc
+    console.print(f"Imported-observation experiment: {result.drift_candidates} candidate(s), {result.verified_regressions} verified in supplied data, 0 requests.")
+    console.print(f"Result: {out}")
 
 
 @app.command()

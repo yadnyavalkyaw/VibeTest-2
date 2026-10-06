@@ -37,7 +37,7 @@ class FakeClient:
         self.seen_headers: list[dict] = []
         self.seen_json: list[dict | None] = []
 
-    def stream(self, method: str, url: str, headers: dict | None = None, json: dict | None = None):
+    def stream(self, method: str, url: str, headers: dict | None = None, json: dict | None = None, **kwargs):
         self.calls.append(url)
         self.seen_headers.append(headers or {})
         self.seen_json.append(json)

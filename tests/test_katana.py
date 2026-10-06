@@ -66,3 +66,8 @@ def test_select_urls_entry_first_dedupes_and_caps():
         "http://localhost:8000/p0",
         "http://localhost:8000/p1",
     ]
+
+
+def test_katana_command_disables_redirects():
+    command = katana._build_command("katana", "http://localhost:8000/", _ctx())
+    assert "-dr" in command

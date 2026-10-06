@@ -1,0 +1,10 @@
+{
+  "read-own-order": false,
+  "read-other-order": true,
+  "delete-as-user": true,
+  "delete-as-admin": false,
+  "removed-owner-check": true,
+  "weakened-role-check": true,
+  "unchanged-denial": false,
+  "functional-only-change": false
+}
