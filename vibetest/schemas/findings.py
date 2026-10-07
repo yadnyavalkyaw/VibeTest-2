@@ -24,6 +24,25 @@ class Severity(str, Enum):
     CRITICAL = "critical"
 
 
+class FindingStatus(str, Enum):
+    CONFIRMED = "confirmed"
+    HIGH_CONFIDENCE = "high_confidence"
+    SUSPECTED = "suspected"
+    INFORMATIONAL = "informational"
+
+
+class SourceEngine(str, Enum):
+    NATIVE = "native"
+    NUCLEI = "nuclei"
+    SEMGREP = "semgrep"
+    TRUFFLEHOG = "trufflehog"
+    GITLEAKS = "gitleaks"
+    OSV = "osv"
+    KATANA = "katana"
+    PLAYWRIGHT = "playwright"
+    ZAP = "zap"
+
+
 class Evidence(BaseModel):
     url: str
     snippet: str = ""
@@ -40,7 +59,11 @@ class Finding(BaseModel):
     owasp_2025: str | None = None       # e.g. "A01:2025"
     severity: Severity = Severity.INFO
     confidence: float = Field(default=1.0, ge=0.0, le=1.0)
+    status: FindingStatus = FindingStatus.INFORMATIONAL
     title: str
     evidence: list[Evidence] = Field(default_factory=list)
     remediation_hint: str = ""
     explanation: str | None = None
+    source_engine: SourceEngine = SourceEngine.NATIVE
+    attack_path: list[str] = Field(default_factory=list)
+    fix_prompt: str = ""

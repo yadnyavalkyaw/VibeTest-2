@@ -70,8 +70,23 @@ def run_scan(
     try:
         artifact = (fetcher or crawler.fetch)(url, ctx)
 
+        # Allow discovered backend hosts embedded in the target's assets (Supabase / Firebase)
+        # so Layer-2 probes can test the authorized app's real backend
+        if ctx.allow_probes and hasattr(gate, "allow_host"):
+            import re
+            haystacks = [p.html for p in artifact.pages] + [b.content for b in artifact.js_bundles]
+            for hay in haystacks:
+                for match in re.finditer(r"https://([a-zA-Z0-9-]+\.(?:supabase\.co|firebaseio\.com|firebasedatabase\.app))", hay):
+                    gate.allow_host(match.group(1))
+
         # 4. Detection → Findings (CONTRACT 2)
         findings = run_detectors(artifact, ctx, detector_ids)
+        if ctx.allow_probes:
+            try:
+                from ..engines.nuclei import run_nuclei
+                findings.extend(run_nuclei(url, ctx))
+            except Exception:
+                pass
     finally:
         if owns_client and probe_client is not None:
             probe_client.close()

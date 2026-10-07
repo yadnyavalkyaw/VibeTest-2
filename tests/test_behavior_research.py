@@ -99,7 +99,7 @@ def test_graph_build_and_diff_carry_observed_authorization_facts():
 
 def test_experiment_result_has_no_requests_and_ground_truth_metrics():
     before, after, verification = _profiles()
-    truth = {"read-own-order": False, "read-other-order": True, "delete-as-user": True, "delete-as-admin": False}
+    truth = {"read-own-order": False, "read-other-order": True, "delete-as-user": True, "delete-as-admin": False, "removed-owner-check": True, "weakened-role-check": True}
     result = run_imported_experiment(before, after, verification, ground_truth=truth)
     assert result.request_count == 0
     assert result.drift_candidates == result.verified_regressions == 4

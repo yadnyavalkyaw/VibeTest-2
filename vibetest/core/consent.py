@@ -15,6 +15,10 @@ class ConsentGate:
     def __init__(self, allowed: Iterable[str]):
         self.allowed = {a.strip().lower() for a in allowed if a and a.strip()}
 
+    def allow_host(self, host: str) -> None:
+        if host and host.strip():
+            self.allowed.add(host.strip().lower())
+
     def is_allowed(self, url: str) -> bool:
         host = (urlparse(url).hostname or "").lower()
         if not host:

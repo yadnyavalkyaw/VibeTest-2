@@ -71,6 +71,16 @@ def run_repo_scan(
                 http=client if settings.osv_api_url else None,
             )
             findings = run_detectors(artifact, ctx, detector_ids)
+            try:
+                from ..engines.semgrep import run_semgrep
+                findings.extend(run_semgrep(root, ctx))
+            except Exception:
+                pass
+            try:
+                from ..engines.trufflehog import run_trufflehog
+                findings.extend(run_trufflehog(str(root), ctx))
+            except Exception:
+                pass
     finally:
         if owns_client:
             client.close()

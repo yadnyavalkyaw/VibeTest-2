@@ -1,0 +1,12 @@
+{
+  "application_id": "minishop-demo",
+  "version_id": "v1-verification",
+  "source_version": "fixture-independent-observation-set",
+  "source_ref": "fixtures/minishop/verification",
+  "observations": [
+    {"case_id":"read-other-order","principal_id":"user-a","role":"user","action":"read","resource":"order-b","resource_owner_id":"user-b","endpoint":"/orders/order-b","method":"GET","application_state":"authenticated","expected":"denied","observed":"allowed","response":{"status_code":200,"indicators":["order-visible"],"evidence_ref":"fixture:verification:bola"}},
+    {"case_id":"delete-as-user","principal_id":"user-a","role":"user","action":"delete","resource":"user-b","endpoint":"/admin/users/user-b","method":"DELETE","application_state":"authenticated","expected":"denied","observed":"allowed","response":{"status_code":204,"indicators":["deleted"],"evidence_ref":"fixture:verification:bfla-user"}},
+    {"case_id":"removed-owner-check","principal_id":"user-a","role":"user","action":"read","resource":"invoice-b","resource_owner_id":"user-b","endpoint":"/invoices/invoice-b","method":"GET","application_state":"authenticated","expected":"denied","observed":"allowed","response":{"status_code":200,"indicators":["invoice-visible"],"evidence_ref":"fixture:verification:removed-check"}},
+    {"case_id":"weakened-role-check","principal_id":"user-a","role":"user","action":"export","resource":"customer-data","endpoint":"/admin/export","method":"POST","application_state":"authenticated","expected":"denied","observed":"allowed","response":{"status_code":200,"indicators":["export-ready"],"evidence_ref":"fixture:verification:weakened-check"}}
+  ]
+}
